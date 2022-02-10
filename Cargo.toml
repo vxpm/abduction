@@ -1,0 +1,31 @@
+[package]
+authors = ["vxpm"]
+name = "abduction"
+version = "0.1.0"
+edition = "2021"
+
+[profile.opt]
+inherits = "dev"
+opt-level = 2
+
+[dependencies]
+bytesize = "1"
+flagset = "0.4"
+anyhow = "1.0"
+binread = "2.2"
+smallvec = "1.8"
+parking_lot = "0.12"
+atomic = "0.5"
+clap = { version = "3.0", features = ["derive"] }
+hex_color = "1"
+
+pixels = "0.9"
+winit = "0.26"
+winit_input_helper = "0.11"
+
+crossterm = { version = "0.23", optional = true }
+tui = { version = "0.17", features = ["crossterm"], default-features = false, optional = true }
+image = { version = "0.24", features = ["png"], default-features = false, optional = true }
+
+[features]
+tdebugger = ["crossterm", "tui", "image"]
