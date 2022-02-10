@@ -282,10 +282,6 @@ impl MemoryBankController for MBC1 {
 }
 
 /// Represents a gameboy game rom.
-///
-/// This struct is also the corresponding MBC for the rom, which means that it implements [GameboyMemory] and behaves like a MBC.
-///
-/// External rom memory can be acessed by reading/writing to addresses starting at 0x8000.
 pub struct Rom {
     header: RomHeader,
     mbc: Box<dyn MemoryBankController + Sync + Send>,

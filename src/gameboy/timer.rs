@@ -43,7 +43,6 @@ impl Timer {
     }
 
     fn update_div(&mut self, memory: &mut Memory) {
-        // TODO: fix this timing.
         if self.div_cycle_count < 256 {
             self.div_cycle_count += 1;
             return;

@@ -419,11 +419,6 @@ impl Ppu {
 
     #[inline]
     fn get_bg_pixel(&self, memory: &mut Memory, pixel_position: (u8, u8)) -> BackgroundPixel {
-        // algoritmo:
-        //  -> transformar a posição do pixel do screen space para o tilemap space
-        //  -> transformar a posição do pixel do tilemap space para tile space
-        //  -> colocar o pixel no buffer
-
         let lcdc = Self::get_lcdc(memory);
         let scx = memory.read(memreg::addresses::SCX);
         let scy = memory.read(memreg::addresses::SCY);
