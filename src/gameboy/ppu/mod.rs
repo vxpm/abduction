@@ -696,7 +696,12 @@ impl Ppu {
                         self.oam_search(memory);
                     }
                 }
-                PPUMode::VBlank => unreachable!(),
+                PPUMode::VBlank => {
+                    self.set_mode(memory, PPUMode::OAMSearch);
+                    self.cycles = 80;
+
+                    self.oam_search(memory);
+                }
                 PPUMode::OAMSearch => {
                     self.set_mode(memory, PPUMode::Rendering);
                     self.cycles = 168;
@@ -717,11 +722,9 @@ impl Ppu {
                     }
                     153 => {
                         self.window_line_counter = 0;
-                        self.set_mode(memory, PPUMode::OAMSearch);
-                        self.cycles = 80 + 456 - 4;
-
                         Self::increment_ly(memory);
-                        self.oam_search(memory);
+
+                        self.cycles = 456 - 4;
                     }
                     _ => {
                         self.cycles = 456;
