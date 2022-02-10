@@ -346,9 +346,9 @@ impl Ppu {
         // verdadeiro e requisitar o interrupt
 
         let cond = check
-            .iter()
+            .into_iter()
             .filter(|(flag, _)| stat.contains(*flag))
-            .any(|(_, condition)| *condition);
+            .any(|(_, condition)| condition);
         if self.interrupt_ongoing {
             self.interrupt_ongoing = cond;
         } else if cond {
@@ -691,8 +691,8 @@ impl Ppu {
                         self.cycles = 456;
 
                         self.buffers.switch();
-                        memory.request_interrupt(memreg::Interrupt::VBlank);
                         Self::increment_ly(memory);
+                        memory.request_interrupt(memreg::Interrupt::VBlank);
                     } else {
                         self.set_mode(memory, PPUMode::OAMSearch);
                         self.cycles = 80;
@@ -715,19 +715,24 @@ impl Ppu {
             },
             _ => match self.mode {
                 PPUMode::HBlank => unreachable!(),
-                PPUMode::VBlank => {
-                    if ly == 153 {
+                PPUMode::VBlank => match ly {
+                    152 => {
+                        self.cycles = 4;
+                        Self::increment_ly(memory);
+                    }
+                    153 => {
                         self.window_line_counter = 0;
                         self.set_mode(memory, PPUMode::OAMSearch);
-                        self.cycles = 80;
+                        self.cycles = 80 + 456 - 4;
 
                         Self::increment_ly(memory);
                         self.oam_search(memory);
-                    } else {
+                    }
+                    _ => {
                         self.cycles = 456;
                         Self::increment_ly(memory);
                     }
-                }
+                },
                 PPUMode::OAMSearch => unreachable!(),
                 PPUMode::Rendering => unreachable!(),
             },
