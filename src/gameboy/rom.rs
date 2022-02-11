@@ -304,7 +304,7 @@ impl Rom {
             anyhow::bail!("Rom size doesn't match with size specified in it's header");
         }
 
-        let external = vec![0xFFu8; header.ram_size * bytesize::KIB as usize].into();
+        let external = vec![0xFFu8; header.ram_size].into();
 
         let mbc: Box<dyn MemoryBankController + Sync + Send> = match header.rom_type {
             RomMBCType::NoMBC => Box::new(NoMBC::new(bytes, external)),

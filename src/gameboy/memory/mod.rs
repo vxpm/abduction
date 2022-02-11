@@ -242,7 +242,7 @@ impl Memory {
             0x0000..=0x3FFF => self.rom.read(address), // rom bank 00 (fixed)
             0x4000..=0x7FFF => self.rom.read(address), // rom bank 01 / NN (switchable)
             0x8000..=0x9FFF => self.vram.read(address - 0x8000), // vram | in cgb, switchable bank 0/1
-            0xA000..=0xBFFF => self.rom.external_read(address), // external ram (switchable bank if any)
+            0xA000..=0xBFFF => self.rom.external_read(address - 0xA000), // external ram (switchable bank if any)
             0xC000..=0xCFFF => self.wram.read(address - 0xC000), // wram | in cgb, bank 0
             0xD000..=0xDFFF => self.wram.read(address - 0xC000), // wram | in cgb, switchable bank 1-7
             0xE000..=0xFDFF => self.wram.read(address - 0xE000), // echo ram, mirror of C000~DDFF
@@ -274,7 +274,7 @@ impl Memory {
             0x0000..=0x3FFF => self.rom.write(address, data), // rom bank 00 (fixed)
             0x4000..=0x7FFF => self.rom.write(address, data), // rom bank 01 / NN (switchable)
             0x8000..=0x9FFF => self.vram.write(address - 0x8000, data), // vram | in cgb, switchable bank 0/1
-            0xA000..=0xBFFF => self.rom.external_write(address, data), // external ram (switchable bank if any)
+            0xA000..=0xBFFF => self.rom.external_write(address - 0xA000, data), // external ram (switchable bank if any)
             0xC000..=0xCFFF => self.wram.write(address - 0xC000, data), // wram | in cgb, bank 0
             0xD000..=0xDFFF => self.wram.write(address - 0xC000, data), // wram | in cgb, switchable bank 1-7
             0xE000..=0xFDFF => self.wram.write(address - 0xE000, data), // echo ram, mirror of C000~DDFF
