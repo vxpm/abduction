@@ -335,8 +335,6 @@ impl Cpu {
     ) where
         F: OnMachineCycle,
     {
-        // TODO: Make implementations more consistent in conventions. Also, some could be simplified if
-        // registers cannot be accessed from outside the CPU.
         match operation {
             Operation::Noop => {
                 // noop
