@@ -179,9 +179,10 @@ impl MemoryBankController for NoMBC {
 struct MBC1 {
     rom: Box<[u8]>,      // Maximum 2MiB
     external: Box<[u8]>, // 32KiB
-    rom_bank: u8,
-    ram_bank: u8,
+    bank1: u8,
+    bank2: u8,
     ram_enabled: bool,
+    alt_mode: bool,
 }
 
 impl MBC1 {
@@ -189,22 +190,57 @@ impl MBC1 {
         Self {
             rom,
             external,
-            rom_bank: 1,
-            ram_bank: 0,
+            bank1: 1,
+            bank2: 0,
             ram_enabled: false,
+            alt_mode: false,
         }
+    }
+
+    pub fn rom_bank_count(&self) -> usize {
+        self.rom.len() / 0x4000
+    }
+
+    pub fn external_bank_count(&self) -> usize {
+        self.external.len() / 0x2000
     }
 }
 
 impl MemoryBankController for MBC1 {
     fn read(&self, address: u16) -> u8 {
         match address {
-            0x0000..=0x3FFF => self.rom[address as usize], // bank 00
+            0x0000..=0x3FFF => {
+                let rom_bank = if self.alt_mode {
+                    (self.bank2 as usize) << 5
+                } else {
+                    0
+                };
+
+                let shift_amount = (self.rom_bank_count() - 1).leading_zeros();
+                let mask = if shift_amount == usize::BITS {
+                    0
+                } else {
+                    usize::MAX >> shift_amount
+                };
+                let rom_bank = rom_bank & mask;
+
+                let rom_bank_start = rom_bank * 0x4000;
+                self.rom[rom_bank_start + address as usize]
+            }
             0x4000..=0x7FFF => {
-                // bank 0N
-                let bank_address = self.rom_bank as usize * 0x4000;
+                let rom_bank = ((self.bank2 as usize) << 5) | self.bank1 as usize;
+
+                let shift_amount = (self.rom_bank_count() - 1).leading_zeros();
+                let mask = if shift_amount == usize::BITS {
+                    0
+                } else {
+                    usize::MAX >> shift_amount
+                };
+                let rom_bank = rom_bank & mask;
+
+                let rom_bank_start = rom_bank * 0x4000;
                 let relative_address = address as usize - 0x4000;
-                self.rom[bank_address + relative_address]
+                self.rom[rom_bank_start + relative_address]
             }
             _ => unreachable!(),
         }
@@ -213,72 +249,73 @@ impl MemoryBankController for MBC1 {
     fn write(&mut self, address: u16, data: u8) {
         match address {
             0x0000..=0x1FFF => {
-                // ram enable/disable
-                self.ram_enabled = data != 0x00;
+                // enable/disable ram
+                self.ram_enabled = (data & 0x0F) == 0x0A;
             }
             0x2000..=0x3FFF => {
-                // rom bank switching (first 5 bits)
-                // let n_of_banks = self.rom.len() / 16 * bytesize::KIB as usize;
-                let bank = data & 0b0001_1111;
+                // bank 1 (lower 5 bits of rom bank)
+                let data = data & 0b0001_1111;
+                let data = if data == 0 { 1 } else { data };
 
-                self.rom_bank &= !0b0001_1111;
-                self.rom_bank |= match bank {
-                    0x20 | 0x40 | 0x60 => bank | 1,
-                    _ => bank,
-                }
+                self.bank1 = data;
             }
             0x4000..=0x5FFF => {
-                // ram bank switching
-                if self.external.len() >= 32 * bytesize::KIB as usize {
-                    self.ram_bank = data & 0b0000_0011;
-                }
-
-                // rom bank switch (2 bits after first 5)
-                if self.rom.len() >= bytesize::MIB as usize {
-                    self.rom_bank &= !(0b0000_0011 << 5);
-                    self.rom_bank |= (data & 0b0000_0011) << 5;
-                }
+                let data = data & 0b0000_0011;
+                self.bank2 = data;
             }
-            _ => (),
+            0x6000..=0x7FFF => {
+                let data = data & 1;
+                self.alt_mode = data == 1;
+            }
+            _ => unreachable!(),
         }
     }
 
     fn external_read(&self, address: u16) -> u8 {
-        if self.ram_enabled {
-            let bank_address = self.ram_bank as usize * 0x2000;
-            self.external[bank_address + address as usize]
-        } else {
-            0xFF
+        if !self.ram_enabled {
+            return 0xFF;
         }
+
+        let ram_bank = if self.alt_mode {
+            self.bank2 as usize
+        } else {
+            0
+        };
+
+        let shift_amount = (self.external_bank_count() - 1).leading_zeros();
+        let mask = if shift_amount == usize::BITS {
+            0
+        } else {
+            usize::MAX >> shift_amount
+        };
+        let ram_bank = ram_bank & mask;
+
+        let ram_bank_start = ram_bank as usize * 0x2000;
+        self.external[ram_bank_start + address as usize]
     }
 
     fn external_write(&mut self, address: u16, data: u8) {
-        if self.ram_enabled {
-            let bank_address = self.ram_bank as usize * 0x2000;
-            self.external[bank_address + address as usize] = data;
+        if !self.ram_enabled {
+            return;
         }
-    }
 
-    // fn external_read(&self, address: u16) -> u8 {
-    //     if self.ram_enabled {
-    //         let bank_address = self.ram_bank as usize * 0x2000;
-    //         self.external
-    //             .get(bank_address + address as usize)
-    //             .copied()
-    //             .unwrap_or(0xFF)
-    //     } else {
-    //         0xFF
-    //     }
-    // }
-    //
-    // fn external_write(&mut self, address: u16, data: u8) {
-    //     if self.ram_enabled {
-    //         let bank_address = self.ram_bank as usize * 0x2000;
-    //         if let Some(r) = self.external.get_mut(bank_address + address as usize) {
-    //             *r = data;
-    //         }
-    //     }
-    // }
+        let ram_bank = if self.alt_mode {
+            self.bank2 as usize
+        } else {
+            0
+        };
+
+        let shift_amount = (self.external_bank_count() - 1).leading_zeros();
+        let mask = if shift_amount == usize::BITS {
+            0
+        } else {
+            usize::MAX >> shift_amount
+        };
+        let ram_bank = ram_bank & mask;
+
+        let ram_bank_start = ram_bank * 0x2000;
+        self.external[ram_bank_start + address as usize] = data;
+    }
 }
 
 /// Represents a gameboy game rom.
