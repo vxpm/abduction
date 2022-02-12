@@ -4,13 +4,14 @@
 
 [![zelda opening](http://img.youtube.com/vi/jRXfu4RTL3s/0.jpg)](http://www.youtube.com/watch?v=jRXfu4RTL3s "zelda opening")
 
-currently a WIP. progress breakdown:
-- cpu: pretty much finished. passes all of blargg's tests.
+this emulator was a fun 2-month project, but it's not being worked on anymore. do, however, mess around with it if you want :)
+
+feature breakdown:
+- cpu: passes all of blargg's tests.
 - ppu: working scanline implementation. has some small bugs that need to be fixed, but gets dmg-acid2 right.
-- apu: not started (yet™). next thing that's going to be worked on.
-- memory: only `no mbc` and `mbc1` roms are currently supported, but support for other mbcs is a todo.
-- sgb: not supported, and there are currently no plans to doing so.
-- cgb: support planned. while work on it hasn't begun, some sections of the code take cgb into account.
+- apu: not implemented.
+- memory: only `no mbc` and `mbc1` roms are supported.
+- cgb: some sections of the code take cgb into account, but it's very far from being supported.
 
 
 # using abduction
@@ -21,10 +22,6 @@ if you're on windows, download the latest version from the releases page and run
 
 
 # building abduction
-
-abduction requires nightly rust since it uses the [`mixed_integer_ops`](https://github.com/rust-lang/rust/issues/87840), [`trait_alias`](https://github.com/rust-lang/rust/issues/41517) and [`thread_is_running`](https://github.com/rust-lang/rust/issues/90470) unstable features. 
-
-to install the latest nightly, do `rustup toolchain install nightly`. to use the nightly toolchain, either put `+nightly` after `cargo` when using cargo or do `rustup default nightly` to set it as the default toolchain.
 
 to build abduction, clone the repo and do `cargo build --release`. optionally, also set your `RUSTFLAGS` environment variable to `-target-cpu=native` before building for better performance (theoretically).
 
