@@ -20,7 +20,7 @@ pub struct DMGVram {
 impl Default for DMGVram {
     fn default() -> Self {
         Self {
-            data: Box::new([0xFFu8; 8 * bytesize::KIB as usize]),
+            data: crate::util::boxed_array_copy(0xFF),
         }
     }
 }
@@ -49,7 +49,7 @@ pub struct CGBVram {
 impl Default for CGBVram {
     fn default() -> Self {
         Self {
-            data: Box::new([0xFFu8; 16 * bytesize::KIB as usize]),
+            data: crate::util::boxed_array_copy(0xFF),
         }
     }
 }
@@ -77,7 +77,7 @@ pub struct DMGWram {
 impl Default for DMGWram {
     fn default() -> Self {
         Self {
-            data: Box::new([0xFFu8; 8 * bytesize::KIB as usize]),
+            data: crate::util::boxed_array_copy(0xFF),
         }
     }
 }
@@ -99,7 +99,7 @@ pub struct CGBWram {
 impl Default for CGBWram {
     fn default() -> Self {
         Self {
-            data: Box::new([0xFFu8; 32 * bytesize::KIB as usize]),
+            data: crate::util::boxed_array_copy(0xFF),
         }
     }
 }
@@ -122,7 +122,7 @@ pub struct Oam {
 impl Default for Oam {
     fn default() -> Self {
         Self {
-            data: Box::new([0xFFu8; 160]),
+            data: crate::util::boxed_array_copy(0xFF),
         }
     }
 }
@@ -151,9 +151,15 @@ pub struct IORegisters {
 
 impl Default for IORegisters {
     fn default() -> Self {
-        Self {
-            data: Box::new([0xFFu8; 128]),
-        }
+        let mut data = crate::util::boxed_array_copy(0xFF);
+
+        data[registers::addresses::TMA as usize - 0xFF00] = 0x00;
+        data[registers::addresses::TIMA as usize - 0xFF00] = 0x00;
+        data[registers::addresses::TAC as usize - 0xFF00] = 0x00;
+        data[registers::addresses::SCY as usize - 0xFF00] = 0x00;
+        data[registers::addresses::SCX as usize - 0xFF00] = 0x00;
+
+        Self { data }
     }
 }
 
@@ -174,7 +180,7 @@ pub struct Hram {
 impl Default for Hram {
     fn default() -> Self {
         Self {
-            data: Box::new([0xFFu8; 128]),
+            data: crate::util::boxed_array_copy(0xFF),
         }
     }
 }
@@ -243,7 +249,7 @@ impl Memory {
             0x4000..=0x7FFF => self.rom.read(address), // rom bank 01 / NN (switchable)
             0x8000..=0x9FFF => self.vram.read(address - 0x8000), // vram | in cgb, switchable bank 0/1
             0xA000..=0xBFFF => self.rom.external_read(address - 0xA000), // external ram (switchable bank if any)
-            0xC000..=0xCFFF => self.wram.read(address - 0xC000), // wram | in cgb, bank 0
+            0xC000..=0xCFFF => self.wram.read(address - 0xC000),         // wram | in cgb, bank 0
             0xD000..=0xDFFF => self.wram.read(address - 0xC000), // wram | in cgb, switchable bank 1-7
             0xE000..=0xFDFF => self.wram.read(address - 0xE000), // echo ram, mirror of C000~DDFF
             0xFE00..=0xFE9F => self.oam.read(address - 0xFE00),  // sprite attribute table (oam)

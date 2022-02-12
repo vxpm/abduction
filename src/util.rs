@@ -10,6 +10,16 @@ where
     Box::<[T; N]>::try_from(b).ok().unwrap()
 }
 
+pub fn boxed_array_copy<T, const N: usize>(value: T) -> Box<[T; N]>
+where
+    T: Copy,
+{
+    let v: Vec<_> = (0..N).map(|_| value).collect();
+    let b = v.into_boxed_slice();
+
+    Box::<[T; N]>::try_from(b).ok().unwrap()
+}
+
 pub fn read_bytes<P>(path: P) -> anyhow::Result<Vec<u8>>
 where
     P: AsRef<std::path::Path>,
