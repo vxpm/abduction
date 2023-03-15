@@ -158,8 +158,6 @@ pub struct Cpu {
     halt: bool,
 }
 
-pub trait OnMachineCycle = FnMut(&mut Memory);
-
 impl Cpu {
     pub fn new() -> Self {
         Self {
@@ -212,7 +210,7 @@ impl Cpu {
     /// Step the CPU emulation. This is equivalent to one "fetch, decode, execute" cycle.
     pub fn step<F>(&mut self, memory: &mut Memory, on_machine_cycle: &mut F)
     where
-        F: OnMachineCycle,
+        F: FnMut(&mut Memory),
     {
         on_machine_cycle(memory);
 
@@ -257,7 +255,7 @@ impl Cpu {
 
     pub fn handle_interrupts<F>(&mut self, memory: &mut Memory, on_machine_cycle: &mut F) -> bool
     where
-        F: OnMachineCycle,
+        F: FnMut(&mut Memory),
     {
         const INTERRUPT_PRIORITY: [memory::registers::Interrupt; 5] = [
             memory::registers::Interrupt::VBlank,
@@ -333,7 +331,7 @@ impl Cpu {
         memory: &mut Memory,
         on_machine_cycle: &mut F,
     ) where
-        F: OnMachineCycle,
+        F: FnMut(&mut Memory),
     {
         match operation {
             Operation::Noop => {

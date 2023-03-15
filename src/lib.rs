@@ -1,6 +1,3 @@
-#![feature(mixed_integer_ops)]
-#![feature(trait_alias)]
-#![feature(thread_is_running)]
 #[allow(clippy::new_without_default)]
 #[deny(clippy::perf)]
 pub mod gameboy;
@@ -203,7 +200,7 @@ pub fn run(args: AbductionArgs) -> anyhow::Result<()> {
     let color_array = args.palette.to_color_array();
     let mut last_redraw = std::time::Instant::now();
     event_loop.run(move |event, _, control_flow| {
-        if !res.is_running() {
+        if res.is_finished() {
             *control_flow = winit::event_loop::ControlFlow::Exit;
         }
 
@@ -216,7 +213,7 @@ pub fn run(args: AbductionArgs) -> anyhow::Result<()> {
 
                     for (i, pixel) in pixels_frame.chunks_exact_mut(4).enumerate() {
                         let (y, x) = crate::util::div_rem(i, 160);
-                        let v = buffer.get_pixel(x as usize, y as usize).unwrap();
+                        let v = buffer.get_pixel(x, y).unwrap();
                         // let c = match v {
                         //     3 => [0x92, 0x5E, 0xC2, 0xFF],
                         //     2 => [0xCF, 0x5B, 0xA6, 0xFF],

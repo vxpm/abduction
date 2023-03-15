@@ -290,7 +290,7 @@ impl MemoryBankController for MBC1 {
         };
         let ram_bank = ram_bank & mask;
 
-        let ram_bank_start = ram_bank as usize * 0x2000;
+        let ram_bank_start = ram_bank * 0x2000;
         self.external[ram_bank_start + address as usize]
     }
 
