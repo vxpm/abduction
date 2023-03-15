@@ -443,7 +443,7 @@ impl From<u8> for PrefixedOperation {
                 0xD0 => Self::SetBitInAtAddressInWordReg(2, WordRegister::HL),
                 0xE0 => Self::SetBitInAtAddressInWordReg(4, WordRegister::HL),
                 0xF0 => Self::SetBitInAtAddressInWordReg(6, WordRegister::HL),
-                _ => unsafe { unreachable_unchecked() },
+                _ => unreachable!(),
             },
             0x0E => match value & 0xF0 {
                 0x00 => Self::RotateAtAddressInWordRegRight(WordRegister::HL),
@@ -462,7 +462,7 @@ impl From<u8> for PrefixedOperation {
                 0xD0 => Self::SetBitInAtAddressInWordReg(3, WordRegister::HL),
                 0xE0 => Self::SetBitInAtAddressInWordReg(5, WordRegister::HL),
                 0xF0 => Self::SetBitInAtAddressInWordReg(7, WordRegister::HL),
-                _ => unsafe { unreachable_unchecked() },
+                _ => unreachable!(),
             },
             low_nibble => {
                 let reg = match low_nibble {
@@ -494,7 +494,7 @@ impl From<u8> for PrefixedOperation {
                         0xD0 => Self::SetBitInReg(2, reg),
                         0xE0 => Self::SetBitInReg(4, reg),
                         0xF0 => Self::SetBitInReg(6, reg),
-                        _ => unsafe { unreachable_unchecked() },
+                        _ => unreachable!(),
                     },
                     0x08..=0x0F => match value & 0xF0 {
                         0x00 => Self::RotateRegRight(reg),
@@ -513,9 +513,9 @@ impl From<u8> for PrefixedOperation {
                         0xD0 => Self::SetBitInReg(3, reg),
                         0xE0 => Self::SetBitInReg(5, reg),
                         0xF0 => Self::SetBitInReg(7, reg),
-                        _ => unsafe { unreachable_unchecked() },
+                        _ => unreachable!(),
                     },
-                    _ => unsafe { unreachable_unchecked() },
+                    _ => unreachable!(),
                 }
             }
         }

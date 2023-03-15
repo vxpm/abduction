@@ -24,7 +24,7 @@ impl Tac {
             0b0000_0001 => 16,
             0b0000_0010 => 64,
             0b0000_0011 => 256,
-            _ => unsafe { std::hint::unreachable_unchecked() },
+            _ => unreachable!(),
         }
     }
 }
