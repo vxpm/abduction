@@ -1,7 +1,7 @@
 [package]
 authors = ["vxpm"]
 name = "abduction"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [profile.opt]
@@ -16,16 +16,20 @@ binread = "2.2"
 smallvec = "1.8"
 parking_lot = "0.12"
 atomic = "0.5"
-clap = { version = "3.0", features = ["derive"] }
+clap = { version = "3.2", features = ["derive"] }
 hex_color = "1"
 
-pixels = "0.9"
-winit = "0.26"
-winit_input_helper = "0.11"
+pixels = "0.11"
+winit = "0.28"
+winit_input_helper = "0.14"
 
 crossterm = { version = "0.23", optional = true }
-tui = { version = "0.17", features = ["crossterm"], default-features = false, optional = true }
-image = { version = "0.24", features = ["png"], default-features = false, optional = true }
+tui = { version = "0.17", features = [
+    "crossterm",
+], default-features = false, optional = true }
+image = { version = "0.24", features = [
+    "png",
+], default-features = false, optional = true }
 
 [features]
 tdebugger = ["crossterm", "tui", "image"]

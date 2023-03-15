@@ -209,7 +209,7 @@ pub fn run(args: AbductionArgs) -> anyhow::Result<()> {
                 {
                     let lock = shared.0.lock();
                     let buffer = lock.ppu().screen();
-                    let pixels_frame = pixels.get_frame();
+                    let pixels_frame = pixels.get_frame_mut();
 
                     for (i, pixel) in pixels_frame.chunks_exact_mut(4).enumerate() {
                         let (y, x) = crate::util::div_rem(i, 160);
@@ -247,7 +247,10 @@ pub fn run(args: AbductionArgs) -> anyhow::Result<()> {
             _ => {
                 if input.update(&event) {
                     // Close events
-                    if input.key_pressed(winit::event::VirtualKeyCode::Escape) || input.quit() {
+                    if input.key_pressed(winit::event::VirtualKeyCode::Escape)
+                        || input.close_requested()
+                        || input.destroyed()
+                    {
                         shared.1.store(true, std::sync::atomic::Ordering::SeqCst);
                         *control_flow = winit::event_loop::ControlFlow::Exit;
                         return;
@@ -255,7 +258,9 @@ pub fn run(args: AbductionArgs) -> anyhow::Result<()> {
 
                     // Resize the window
                     if let Some(size) = input.window_resized() {
-                        pixels.resize_surface(size.width, size.height);
+                        pixels
+                            .resize_surface(size.width, size.height)
+                            .expect("resizing successful");
                     }
 
                     // Update input

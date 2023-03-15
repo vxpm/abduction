@@ -1,5 +1,4 @@
 use super::{ByteRegister, CpuFlag, WordRegister};
-use std::hint::unreachable_unchecked;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Operation {
